@@ -5,11 +5,12 @@ This module automates the creation of localizations (i18n).
 import argparse
 from googletrans import Translator
 
-def main():
+PKG = "WAPL_LOCALIZATION_PKG"
+
+def parse_arguments():
     """
-    Main function to handle argument parsing and translation.
+    Parse command-line arguments.
     """
-    # Set up argument parser
     parser = argparse.ArgumentParser(
         description='Automate creating localizations (i18n).'
     )
@@ -25,14 +26,20 @@ def main():
         '--input-language', type=str, default='cs',
         help='The input language code (default is "cs" for Czech)'
     )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+def main():
+    """
+    Main function to handle argument parsing and translation.
+    """
+    args = parse_arguments()
 
     # Define the languages and their codes
     languages = {
         'cs_CZ': 'cs',  # Czech
         'sk_SK': 'sk',  # Slovak
         'en_US': 'en',  # English
-        'uk_UA': 'uk'  # Ukrainian
+        'uk_UA': 'uk'   # Ukrainian
     }
 
     # Validate input language
@@ -63,12 +70,10 @@ def main():
         ).pronunciation.replace("'", "''")
 
     # Print the results
-    print(
-        f"WAPL_LOCALIZATION_PKG.LOC_KEY('{args.key}', '{args.application}');"
-    )
+    print(f"{PKG}.LOC_KEY('{args.key}', '{args.application}');")
     for lang_code, translation in translations.items():
         print(
-            f"WAPL_LOCALIZATION_PKG.LOC_VAL('{args.key}', '{args.application}', "
+            f"{PKG}.LOC_VAL('{args.key}', '{args.application}', "
             f"'{lang_code}', '{translation}');"
         )
 
