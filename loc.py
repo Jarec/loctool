@@ -36,17 +36,20 @@ def main():
 
     # Define the languages and their codes
     languages = {
-        'cs_CZ': 'cs',  # Czech
-        'sk_SK': 'sk',  # Slovak
-        'en_US': 'en',  # English
-        'uk_UA': 'uk'   # Ukrainian
+        'cs_CZ': ('cs', 'text'),  # Czech
+        'sk_SK': ('sk', 'text'),  # Slovak
+        'en_US': ('en', 'text'),  # English
+        'uk_UA': ('uk', 'pronunciation')   # Ukrainian
     }
 
+    # Get the supported languages
+    supported_languages = set(map(lambda x: x[0], languages.values()))
+
     # Validate input language
-    if args.input_language not in languages.values():
+    if args.input_language not in supported_languages:
         raise ValueError(
             f"Unsupported input language: {args.input_language}. "
-            f"Supported languages are: {', '.join(languages.values())}"
+            f"Supported languages are: {', '.join(supported_languages)}"
         )
 
     # Initialize translator
@@ -54,20 +57,11 @@ def main():
 
     # Perform translations
     translations = {}
-    for lang_code, lang in languages.items():
-        if lang == args.input_language:
-            translations[lang_code] = args.localization
-        else:
-            translated = translator.translate(
-                args.localization, src=args.input_language, dest=lang
-            )
-            translations[lang_code] = translated.text.replace("'", "''")
-
-    # Convert Ukrainian translation to Latin alphabet
-    if 'uk_UA' in translations:
-        translations['uk_UA'] = translator.translate(
-            args.localization, src=args.input_language, dest='uk'
-        ).pronunciation.replace("'", "''")
+    for lang_code, (lang, result_type) in languages.items():
+        translated = translator.translate(
+            args.localization, src=args.input_language, dest=lang
+        )
+        translations[lang_code] = getattr(translated, result_type).replace("'", "''")
 
     # Print the results
     print(f"{PKG}.LOC_KEY('{args.key}', '{args.application}');")
