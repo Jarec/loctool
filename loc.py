@@ -28,6 +28,12 @@ def parse_arguments():
     )
     return parser.parse_args()
 
+def escape_translation(translation):
+    """
+    Escape single quotes in the translation.
+    """
+    return translation.replace("'", "''").replace('`',"''").replace('ʹ', "''")
+
 def main():
     """
     Main function to handle argument parsing and translation.
@@ -61,7 +67,7 @@ def main():
         translated = translator.translate(
             args.localization, src=args.input_language, dest=lang
         )
-        translations[lang_code] = getattr(translated, result_type).replace("'", "''")
+        translations[lang_code] = escape_translation(getattr(translated, result_type))
 
     # Print the results
     print(f"{PKG}.LOC_KEY('{args.key}', '{args.application}');")
