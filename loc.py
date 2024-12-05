@@ -3,7 +3,11 @@ This module automates the creation of localizations (i18n).
 """
 
 import argparse
-from googletrans import Translator
+from deep_translator import GoogleTranslator
+import transliterate
+
+def cyrillic_to_latin(text):
+    return transliterate.translit(text, 'uk', reversed=True)
 
 PKG = "WAPL_LOCALIZATION_PKG"
 
@@ -42,10 +46,10 @@ def main():
 
     # Define the languages and their codes
     languages = {
-        'cs_CZ': ('cs', 'text'),  # Czech
-        'sk_SK': ('sk', 'text'),  # Slovak
-        'en_US': ('en', 'text'),  # English
-        'uk_UA': ('uk', 'pronunciation')   # Ukrainian
+        'cs_CZ': ('cs', lambda x: x),  # Czech
+        'sk_SK': ('sk', lambda x: x),  # Slovak
+        'en_US': ('en', lambda x: x),  # English
+        'uk_UA': ('uk', cyrillic_to_latin)   # Ukrainian
     }
 
     # Get the supported languages
@@ -58,16 +62,11 @@ def main():
             f"Supported languages are: {', '.join(supported_languages)}"
         )
 
-    # Initialize translator
-    translator = Translator()
-
     # Perform translations
     translations = {}
-    for lang_code, (lang, result_type) in languages.items():
-        translated = translator.translate(
-            args.localization, src=args.input_language, dest=lang
-        )
-        translations[lang_code] = escape_translation(getattr(translated, result_type))
+    for lang_code, (lang, fnc) in languages.items():
+        translated = GoogleTranslator(source=args.input_language, target=lang).translate(args.localization)
+        translations[lang_code] = escape_translation(fnc(translated))
 
     # Print the results
     print(f"{PKG}.LOC_KEY('{args.key}', '{args.application}');")
